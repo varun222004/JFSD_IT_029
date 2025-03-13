@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Alliance Weather Finder</title>
+    
+    <!-- Bootstrap CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    
+    <style>
+        body {
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            font-family: 'Poppins', sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        h1 {
+            font-weight: bold;
+            color: white;
+        }
+        input {
+            padding: 10px;
+            width: 70%;
+            border: none;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #ff7eb3;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #ff5277;
+        }
+        .weather-info {
+            margin-top: 20px;
+            display: none;
+        }
+        .weather-icon {
+            width: 100px;
+            height: 100px;
+        }
+        .error {
+            color: #ff3b3b;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Alliance Weather Finder 🌎</h1>
+        <form id="weatherForm">
+            <input type="search" id="city" placeholder="Enter city name" required>
+            <button type="submit">Search</button>
+        </form>
+        <p id="errorMsg" class="error mt-2"></p>
+
+        <div class="weather-info" id="weatherInfo">
+            <img id="weatherIcon" class="weather-icon" src="" alt="Weather Icon">
+            <h2 id="cityName"></h2>
+            <p><strong>Temperature:</strong> <span id="temp"></span>°C</p>
+            <p><strong>Max Temp:</strong> <span id="tempMax"></span>°C</p>
+            <p><strong>Min Temp:</strong> <span id="tempMin"></span>°C</p>
+            <p><strong>Humidity:</strong> <span id="humidity"></span>%</p>
+            <p><strong>Description:</strong> <span id="description"></span></p>
+        </div>
+    </div>
+
+    <script>
+        const apiKey = "c62ea041f3b82ad3ae7e2463e5cb0b60";
+        const form = document.getElementById("weatherForm");
+        const cityInput = document.getElementById("city");
+        const weatherInfo = document.getElementById("weatherInfo");
+        const errorMsg = document.getElementById("errorMsg");
+        const weatherIcon = document.getElementById("weatherIcon");
+
+        form.addEventListener("submit", function(event) {
+            event.preventDefault();
+            const cityName = cityInput.value.trim();
+            if (cityName === "") {
+                errorMsg.textContent = "Please enter a city name.";
+                weatherInfo.style.display = "none";
+                return;
+            }
+            errorMsg.textContent = ""; // Clear any previous error message
+            fetchWeather(cityName);
+        });
+
+        function fetchWeather(city) {
+            const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`;
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.cod !== 200) {
+                        throw new Error(data.message);
+                    }
+                    showWeather(data);
+                })
+                .catch(error => {
+                    errorMsg.textContent = "Error: " + error.message;
+                    weatherInfo.style.display = "none";
+                });
+        }
+
+        function showWeather(data) {
+            document.getElementById("cityName").textContent = data.name;
+            document.getElementById("temp").textContent = data.main.temp;
+            document.getElementById("tempMax").textContent = data.main.temp_max;
+            document.getElementById("tempMin").textContent = data.main.temp_min;
+            document.getElementById("humidity").textContent = data.main.humidity;
+            document.getElementById("description").textContent = data.weather[0].description;
+
+            // Weather icon based on OpenWeatherMap icon code
+            const iconCode = data.weather[0].icon;
+            weatherIcon.src = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
+
+            weatherInfo.style.display = "block"; // Show the weather info
+        }
+    </script>
+
+</body>
+</html>
